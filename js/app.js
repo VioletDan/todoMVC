@@ -2,23 +2,22 @@
 	"use strict"
 
 	//初始化angular的模块
-	angular.module("app",[])
-		.controller("c1",["$scope","$location",function($scope,$location){
+	angular.module("app",["app.data"])
+		//要把创建的服务注入到控制器里
+		.controller("c1",["$scope","$location","todoList",function($scope,$location,todoList){
+			// 保存数据
+			// $scope.save=function(){
+			// 	todoList.save();
+			// }
+			// if($scope.todoList==null){
+			// 	return;
+			// }
 			// 1.展示任务列表
-			$scope.todoList=[
-				{id:1,content:"白发三千丈,缘愁似个长",isCompleted:false},
-				{id:2,content:"窗前明月光,疑是地上霜",isCompleted:true},
-				{id:3,content:"花间一壶酒,独酌无相亲",isCompleted:false},
-				{id:4,content:"举杯邀明月,对影成三人",isCompleted:true},
-				{id:5,content:"春眠不觉晓,处处闻啼鸟",isCompleted:false},
-				{id:6,content:"千山鸟飞绝,万径人踪灭",isCompleted:true},
-				{id:7,content:"独坐幽篁里,弹琴复长啸",isCompleted:false},
-				{id:8,content:"深林人不知,明月来相照",isCompleted:true}
-			]
+			$scope.todoList=todoList.getData();
 			//2.添加一些任务
+			$scope.newTodo="";
 			$scope.addTodo=function(){
-				// alert($scope.todoList[$scope.todoList.length-1].id +1);
-				$scope.todoList.push({
+				$scope.newTodo=todoList.add({
 					id:$scope.todoList[$scope.todoList.length-1].id+1,
 					content:$scope.content,
 					isCompleted:false
@@ -29,11 +28,7 @@
 			//3.删除一条任务
 			//需要传入每一条数据的id,才能知道删除的是哪个
 			$scope.delTodo=function(id){
-				$scope.todoList.forEach(function(v,i){
-					if(id==v.id){
-						$scope.todoList.splice(i,1);
-					}
-				})
+				todoList.del(id);
 			}
 			//4.修改任务,给li添加editing类样式,,html页面便可控制
 			// $scope.editTodo=function(id){
@@ -53,9 +48,9 @@
 			// 	return false;
 			// }
 			//5.切换任务选中状态(单个或批量)
+			// 视图中的操作,不用放在数据模型中
 			$scope.isCheckAll=false;
 			$scope.markAll=function(){
-				// alert(1);
 				$scope.todoList.forEach(function(v,i){
 					v.isCompleted=$scope.isCheckAll;
 				})
@@ -72,26 +67,13 @@
 			$scope.clearCompleted=function(){
 				// alert(1);
 				//逆向思维,声明一个新的数组,只存储未完成的任务,再重新赋值给$scope.todoList
-				var todoList=[];
-				$scope.todoList.forEach(function(v,i){
-					if(!v.isCompleted){
-						todoList.push($scope.todoList[i]);
-					}
-				})
-				$scope.todoList=todoList;
+				todoList.clearCompleted();
 			}
 			//7.显示未完成的任务数
 			$scope.isnotCompleted=function(){
-				var count=0;
-				$scope.todoList.forEach(function(v,i){
-					if(!v.isCompleted){
-						count++;
-
-					}
-				})
-				//console.log(count);
-				return count;
+				return todoList.getLeftCount()
 			}
+			
 			//8.显示不同状态的任务以及当前任务高亮处理
 			//利用筛选
 			$scope.status=undefined;
